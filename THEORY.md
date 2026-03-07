@@ -7,10 +7,13 @@ This documentation explores the evolution of sequence models, from basic recurre
 ### 1. [Recurrent Neural Networks (RNN)](theory/01_rnn.md)
 The foundations of sequential processing and the vanishing gradient problem.
 
-### 2. [Attention Mechanisms](theory/02_attention.md)
+### 2. [LSTMs and GRUs](theory/02_lstm.md)
+Addressing the gradient problem with gates and additive updates.
+
+### 3. [Attention Mechanisms](theory/03_attention.md)
 Transitioning from fixed-length context to dynamic relevance with Scaled Dot-Product and Multi-head attention.
 
-### 3. [Transformers](theory/03_transformer.md)
+### 4. [Transformers](theory/04_transformer.md)
 Building the Encoder-Decoder architecture, Positional Encodings, and specialized variants like GPT, BERT, and T5.
 
 ---
