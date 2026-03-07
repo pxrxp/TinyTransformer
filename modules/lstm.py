@@ -30,3 +30,27 @@ class LSTMCell(Module):
         h_next = o * torch.tanh(c_next)
         
         return h_next, c_next
+
+class LSTM(Module):
+    def __init__(self, input_size, hidden_size):
+        super().__init__()
+        self.hidden_size = hidden_size
+        self.cell = LSTMCell(input_size, hidden_size)
+
+    def forward(self, x, state0=None):
+        # x: (seq_len, batch_size, input_size)
+        seq_len, batch_size, _ = x.size()
+        
+        if state0 is None:
+            h0 = torch.zeros(batch_size, self.hidden_size, device=x.device)
+            c0 = torch.zeros(batch_size, self.hidden_size, device=x.device)
+            state = (h0, c0)
+        else:
+            state = state0
+        
+        h_all = []
+        for i in range(seq_len):
+            state = self.cell(x[i], state)
+            h_all.append(state[0])
+            
+        return torch.stack(h_all), state
