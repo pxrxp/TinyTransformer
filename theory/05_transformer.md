@@ -110,23 +110,16 @@ $$\mu_4 = \frac{\mathbf{0} + [0.5, -0.2, \dots]}{2} = [0.25, -0.1, \dots]$$
 
 The batch mean is pulled toward zero by the padding. The normalization of "on" is now corrupted by a zero vector from Sentence A. This is **Cross-Sentence Pollution**.
 
-### 2.4 The Solution: Layer Normalization
+### 2.4 The Solution: Manual Layer Normalization
 
-**Decision**: Average over the $d_{model}$ features of a **single token** $x \in \mathbb{R}^{d_{model}}$ (not across the batch).
+We implement this by calculating the statistics directly over the token dimension:
 
-Following the three steps from 2.2:
+1. **Mean**: $\mu = \frac{1}{d} \sum_{i=1}^{d} x_i$
+2. **Variance**: $\sigma^2 = \frac{1}{d} \sum_{i=1}^{d} (x_i - \mu)^2$
+3. **Normalize**: $\hat{x} = \frac{x - \mu}{\sqrt{\sigma^2 + \epsilon}}$
+4. **Scale & Shift**: $y = \gamma \hat{x} + \beta$ (using learnable parameters $\gamma, \beta$)
 
-$$\mu = \frac{1}{d_{model}}\sum_{j=1}^{d_{model}} x_j \qquad \text{(mean of this token's features)}$$
-
-$$\sigma^2 = \frac{1}{d_{model}}\sum_{j=1}^{d_{model}}(x_j - \mu)^2 \qquad \text{(variance of this token's features)}$$
-
-Apply $\hat{x} = (x - \mu)/\sigma$ and then the learned re-scale $\gamma \hat{x} + \beta$. Combined:
-
-$$LN(x) = \gamma \cdot \frac{x - \mu}{\sqrt{\sigma^2 + \epsilon}} + \beta, \quad \gamma, \beta \in \mathbb{R}^{d_{model}}$$
-
-($\epsilon$ is a small constant to prevent dividing by zero.)
-
-Each token normalizes itself using only its own $d_{model}$ numbers. What Sentence A's padding looks like is completely irrelevant to how "on" is normalized.
+By writing this explicitly in code, we avoid the black-box of standard libraries and see exactly how each token's features are re-centered and re-scaled. Each token normalizes itself using only its own $d_{model}$ numbers. What Sentence A's padding looks like is completely irrelevant to how "on" is normalized.
 
 ---
 
@@ -162,7 +155,7 @@ Even if $f'(x_l) \approx 0$ (saturated or uninitialized), the $\mathbf{I}$ term 
 Attention computes a weighted sum of value vectors:
 $$\text{Attn}(Q,K,V) = AV, \quad A = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right) \in \mathbb{R}^{L \times L}$$
 
-where $Q, K \in \mathbb{R}^{L \times d_k}$, $V \in \mathbb{R}^{L \times d_v}$, and $L$ is the sequence length. $A$ is a matrix of scalars (the attention weights), so $AV$ is a matrix multiplication — a linear map. Stacking two attention layers:
+where $A \in \mathbb{R}^{L \times L}, Q, K \in \mathbb{R}^{L \times d_k}$, $V \in \mathbb{R}^{L \times d_v}$, and $L$ is the sequence length. $A$ is a matrix of scalars (the attention weights), so $AV$ is a matrix multiplication — a linear map. Stacking two attention layers:
 $$A_2(A_1 V) = (A_2 A_1) V$$
 which is again a single matrix multiplication. $L$ attention layers collapse to **one** linear map. The model cannot represent any conditional logic.
 
@@ -183,3 +176,29 @@ $$W_1 \in \mathbb{R}^{d_{model} \times 4d_{model}}, \quad W_2 \in \mathbb{R}^{4d
 - **ReLU ($\max(0, \cdot)$)**: Each of the $4d_{model}$ neurons is independently either active or dead. The combination of many such on/off decisions is what lets the FFN implement piecewise conditional logic.
 - **$4d_{model}$ expansion**: More neurons = more independent thresholds the model can learn. Compressing back to $d_{model}$ forces the model to distill those decisions into the main stream.
 - Attention **gathers** information from other tokens. The FFN **processes** it, independently, token by token.
+
+---
+
+## 5. Dropout: Stochastic Regularization
+
+Deep Transformers are prone to **co-adaptation**—where neurons become overly dependent on each other, leading to overfitting on specific patterns in the training set.
+
+### 5.1 Bernoulli Masking
+
+Dropout is implemented by multiplying the input tensor $x$ element-wise by a mask $m$ sampled from a **Bernoulli distribution**:
+
+$$P(m_i=k) = \begin{cases} 1-p & \text{if } k=1 \\ p & \text{if } k=0 \end{cases}$$
+
+Where $p$ is the dropout probability. In code, this is executed via `torch.rand_like(x) > p`.
+
+### 5.2 Expected Value Scaling
+
+During training, applying the mask $m$ reduces the expected magnitude of the tensor. For an indicator variable $m_i \sim \text{Bernoulli}(1-p)$, the expected value is:
+
+$$E[m_i] = 1 \cdot (1-p) + 0 \cdot p = 1-p$$
+
+To ensure the output $y$ has the same expected value as the input $x$ (preserving activation magnitude), we apply **Inverted Dropout** by scaling the output by $\frac{1}{1-p}$:
+
+$$E\left[\frac{x_i \cdot m_i}{1-p}\right] = \frac{x_i}{1-p} E[m_i] = \frac{x_i}{1-p} (1-p) = x_i$$
+
+**Consequence**: The expected sum and variance of the activations remain consistent between training (where elements are dropped) and evaluation (where $p=0$ and no elements are dropped).
