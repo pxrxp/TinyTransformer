@@ -8,6 +8,12 @@ class ScaledDotProductAttention(Module):
         super().__init__()
 
     def forward(self, q, k, v, mask=None):
+        """
+        q: (batch, heads, seq_len, d_k) - query vectors
+        k: (batch, heads, seq_len, d_k) - key vectors
+        v: (batch, heads, seq_len, d_k) - value vectors
+        mask: optional (batch, 1, 1, seq_len) - prevents looking at certain tokens
+        """
         # We have 4D tensors: (Batch, Heads, L, d_k)
         # PyTorch treats (Batch, Heads) as a 'stack' of many 2D matrices.
         # It only performs matmul/transpose on the last two dimensions (L, d_k).
@@ -19,6 +25,12 @@ class ScaledDotProductAttention(Module):
         
         if mask is not None:
             scores = scores.masked_fill(mask == 0, -1e9)
+        
+        # scores.masked_fill(mask == 0, -1e9)
+        # mask == 0: Creates a boolean tensor where True indicates positions to mask
+        # -1e9: A large negative number
+        # masked_fill: Replaces elements in 'scores' with -1e9 where the mask is True
+        # Why? Softmax(-1e9) -> 0. This effectively prevents the model from attending to masked positions.
             
         weights = torch.softmax(scores, dim=-1)
         
@@ -38,10 +50,17 @@ class MultiHeadAttention(Module):
         self.w_k = nn.Linear(d_model, d_model)
         self.w_v = nn.Linear(d_model, d_model)
         self.w_o = nn.Linear(d_model, d_model)
+
+        # nn.Linear(in_features, out_features)
+        # in_features: Dimension of input features
+        # out_features: Dimension of output features
         
         self.attention = ScaledDotProductAttention()
 
     def split_heads(self, x):
+        """
+        x: (batch, seq_len, d_model) - combined feature vector
+        """
         batch, seq_len, _ = x.size()
         # view(): Breaks d_model into (Heads, d_k). Shape: (B, L, H, d_k)
         # transpose(1, 2): Swaps L and H -> (B, H, L, d_k)
@@ -49,6 +68,9 @@ class MultiHeadAttention(Module):
         return x.view(batch, seq_len, self.num_heads, self.d_k).transpose(1, 2)
 
     def combine_heads(self, x):
+        """
+        x: (batch, num_heads, seq_len, d_k) - vectors for each individual head
+        """
         batch, heads, seq_len, d_k = x.size()
         # transpose(1, 2): Swaps back -> (B, L, H, d_k)
         # contiguous(): Re-orders memory so the H and d_k dimensions are side-by-side
@@ -56,11 +78,13 @@ class MultiHeadAttention(Module):
         return x.transpose(1, 2).contiguous().view(batch, seq_len, self.d_model)
 
     def forward(self, q, k, v, mask=None):
+        """
+        q, k, v: (batch, seq_len, d_model) - input embeddings
+        mask: optional mask to prevent attention to certain positions
+        """
         q, k, v = self.w_q(q), self.w_k(k), self.w_v(v)
-        
         q, k, v = self.split_heads(q), self.split_heads(k), self.split_heads(v)
         
         context, weights = self.attention(q, k, v, mask)
-        
         out = self.combine_heads(context)
         return self.w_o(out), weights
