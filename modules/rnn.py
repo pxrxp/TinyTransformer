@@ -11,6 +11,10 @@ class RNNCell(Module):
         self.b = nn.Parameter(torch.zeros(hidden_size))
 
     def forward(self, x, h):
+        """
+        x: (batch_size, input_size) - input at the current time step
+        h: (batch_size, hidden_size) - hidden state from the previous time step
+        """
         # x: (batch_size, input_size)
         # h: (batch_size, hidden_size)
         h_next = torch.tanh(x @ self.W_ih + h @ self.W_hh + self.b)
@@ -23,6 +27,10 @@ class RNN(Module):
         self.cell = RNNCell(input_size, hidden_size)
 
     def forward(self, x, h0=None):
+        """
+        x: (seq_len, batch_size, input_size) - input sequence
+        h0: (batch_size, hidden_size) - optional initial hidden state
+        """
         # x: (seq_len, batch_size, input_size)
         seq_len, batch_size, _ = x.size()
         if h0 is None:
