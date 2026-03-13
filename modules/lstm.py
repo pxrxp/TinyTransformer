@@ -14,6 +14,12 @@ class LSTMCell(Module):
         self.b = nn.Parameter(torch.zeros(4 * hidden_size))
 
     def forward(self, x, state):
+        """
+        x: (batch_size, input_size) - input at the current time step
+        state: (h, c) - hidden and cell states from the previous time step
+               h: (batch_size, hidden_size)
+               c: (batch_size, hidden_size)
+        """
         h, c = state
         
         # Compute all gate inputs in one batch
@@ -38,6 +44,10 @@ class LSTM(Module):
         self.cell = LSTMCell(input_size, hidden_size)
 
     def forward(self, x, state0=None):
+        """
+        x: (seq_len, batch_size, input_size) - input sequence
+        state0: (h0, c0) - optional initial hidden and cell states
+        """
         # x: (seq_len, batch_size, input_size)
         seq_len, batch_size, _ = x.size()
         
