@@ -18,9 +18,16 @@ class GRUCell(Module):
         self.b_cand = nn.Parameter(torch.zeros(hidden_size))
 
     def forward(self, x, h):
+        """
+        x: (batch_size, input_size) - input at the current time step
+        h: (batch_size, hidden_size) - hidden state from the previous time step
+        """
         gates = x @ self.W_gates_ih + h @ self.W_gates_hh + self.b_gates
         z, r = gates.chunk(2, dim=1)
         z, r = torch.sigmoid(z), torch.sigmoid(r)
+
+        # Example: gates = tensor([[0.1, 0.2, 0.3, 0.4]])
+        # gates.chunk(2, dim=1) -> [tensor([[0.1, 0.2]]), tensor([[0.3, 0.4]])]
         
         h_tilde = torch.tanh(x @ self.W_cand_ih + (r * h) @ self.W_cand_hh + self.b_cand)
         h_next = (1 - z) * h + z * h_tilde
@@ -34,6 +41,11 @@ class GRU(Module):
         self.cell = GRUCell(input_size, hidden_size)
 
     def forward(self, x, h0=None):
+        """
+        x: (seq_len, batch_size, input_size) - input sequence
+        h0: (batch_size, hidden_size) - optional initial hidden state 
+        """
+        # x: (seq_len, batch_size, input_size)
         seq_len, batch_size, _ = x.size()
         
         if h0 is None:
