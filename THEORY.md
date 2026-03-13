@@ -16,8 +16,8 @@ A simplified gating architecture that merges hidden and cell states.
 ### 4. [Attention Mechanisms](theory/04_attention.md)
 Transitioning from fixed-length context to dynamic relevance with Scaled Dot-Product and Multi-head attention.
 
-### 5. [Transformers](theory/05_transformer.md)
-Building the Encoder-Decoder architecture, Positional Encodings, and specialized variants like GPT, BERT, and T5.
+### 5. [Transformer Architecture](theory/05_transformer.md)
+Building the Encoder-Decoder architecture, Positional Encodings, and Add & Norm layers.
 
 ---
 *For implementation details, see the [README.md](README.md).*
