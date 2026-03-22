@@ -21,5 +21,14 @@ Transitioning from fixed-length context to dynamic relevance with Scaled Dot-Pro
 ### 7. [Full Transformer Architecture](theory/07_full_transformer.md)
 Building the Encoder-Decoder architecture, Positional Encodings, and Add & Norm layers.
 
+### 8. [GPT](theory/08_gpt.md)
+Decoder-only architecture for autoregressive text generation.
+
+### 9. [BERT](theory/09_bert.md)
+Encoder-only architecture utilizing Masked Language Modeling (MLM).
+
+### 10. [T5](theory/10_t5.md)
+Unified Encoder-Decoder framework casting all NLP problems into a text-to-text format.
+
 ---
 *For implementation details, see the [README.md](README.md).*
