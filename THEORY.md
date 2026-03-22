@@ -16,7 +16,9 @@ A simplified gating architecture that merges hidden and cell states.
 ### 4. [Attention Mechanisms](theory/04_attention.md)
 Transitioning from fixed-length context to dynamic relevance with Scaled Dot-Product and Multi-head attention.
 
-### 5. [Transformer Architecture](theory/05_transformer.md)
+### 5. [Transformer Encoder](theory/05_encoder.md)
+### 6. [Transformer Decoder](theory/06_decoder.md)
+### 7. [Full Transformer Architecture](theory/07_full_transformer.md)
 Building the Encoder-Decoder architecture, Positional Encodings, and Add & Norm layers.
 
 ---
