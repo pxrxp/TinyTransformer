@@ -1,4 +1,9 @@
-# Transformer Architecture
+# Transformer Encoder
+
+**Encoder**: Processes the source language.
+
+**Decoder**: Learns to generate the target language.
+
 
 The Transformer processes all tokens in parallel. Unlike RNNs, it has no built-in sense of order or time. Every "fix" in the architecture exists to solve a problem that this parallelism creates.
 
