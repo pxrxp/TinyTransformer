@@ -2,6 +2,8 @@
 
 This document describes the high-level data flow through the Transformer model, mapping the implemented Python modules directly to the components shown in Figure 1 of "Attention Is All You Need". Detailed theoretical breakdowns of the individual blocks are available in `05_encoder.md` and `06_decoder.md`.
 
+<img width="966" height="557" alt="image" src="https://github.com/user-attachments/assets/d8540194-dffe-4799-b076-a69600e7dbab" />
+
 ## Diagram Legend (Arrows and Symbols)
 
 Before tracing the boxes, it is essential to define the mechanical routing symbols natively used in the original paper's figure:
