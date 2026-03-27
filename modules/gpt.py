@@ -82,7 +82,9 @@ class GPT(Module):
             seq_len = input_ids.size(1)
             mask = self.generate_causal_mask(seq_len).to(input_ids.device)
             
-        x = self.token_embedding(input_ids)
+        # Scale embeddings by sqrt(d_model) before adding positional encoding
+        # This prevents the unit-variance positional signals from drowning out the token meanings.
+        x = self.token_embedding(input_ids) * math.sqrt(self.token_embedding.embedding_dim)
         x = self.positional_encoding(x)
         
         for block in self.blocks:
