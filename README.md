@@ -4,8 +4,10 @@ A compact PyTorch implementation of recurrent models, attention, and Transformer
 
 This repo is built as a study in sequence modeling. The goal is not to be a polished framework or a production training stack. It is to make the design explicit: how the recurrent units work, why attention was introduced, how positional encoding restores order, and how the Transformer family builds on those ideas.
 
+We'll progress from this simple recurrent model:
 ![rnn](https://miro.medium.com/v2/resize:fit:1000/1*d_POV7c8fzHbKuTgJzCxtA.gif)
 
+to the Transformer architecture:
 ![transformer](https://cdn.prod.website-files.com/65c0cd3f2acb33427e35b1f6/69b54b23ecf21150cb53d6f0_67996a0a63943f59ad038d15_AD_4nXfPWwNnlZ1mPxjz3qy0BAcHl3wfWtJDcBIXVj-IteOtu9UxB8uIBRsfcqA2sskc-pzw5Vihbnzeji0NTLHjbt8QTiGMAFIWBDtNHMPwv7LnFHWmViWy-rG3rkXedrhPYnT_pUZe.gif)
 
 ## Why this project exists
@@ -101,7 +103,6 @@ The core mechanism is the same; the difference is in how the model is trained an
 
 - `modules/` — model implementations
 - `theory/` — notes explaining each architecture and its intuition
-- `THEORY.md` — higher-level overview of the progression
 - `demo.ipynb` — notebook walkthrough
 - `README.md` — project overview
 
